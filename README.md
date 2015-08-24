@@ -1,6 +1,9 @@
 TOOL:						create_new_VM
+
 VERSION:	      1.0
+
 VERSION DATE:	  24 Aug 15
+
 AUTHOR:	        Brian Philip
 
 README:
@@ -14,5 +17,7 @@ The kickstart profile includes the post-ks-config.bash post script which needs t
 
 STILL TO COME: 
 Increase options for sizing VM and choosing OS/release
+
 Post script to install / config Chef client
+
 Let Chef do its thing
