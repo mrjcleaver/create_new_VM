@@ -1,4 +1,4 @@
-TOOL:           create_new_VM  
+TOOL:						create_new_VM
 VERSION:	      1.0
 VERSION DATE:	  24 Aug 15
 AUTHOR:	        Brian Philip
