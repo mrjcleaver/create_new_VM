@@ -24,9 +24,10 @@ ESX_HOST="192.168.1.200"
 ESX_USER="root"
 ESX_DATASTORE="/vmfs/volumes/datastore1/"
 TMP_DIR="/tmp/create_vm"
-mkdir -p ${TMP_DIR}
 AUTO_BUILD_CONFIG_DIR="/var/www/html/pub/auto_build"
+mkdir -p ${TMP_DIR}
 mkdir -p ${AUTO_BUILD_CONFIG_DIR}
+TODAY=`date +%x`
 #################################################################
 
 while [[ $# > 1 ]]
@@ -53,11 +54,18 @@ done
 # Lets start by checking if the host already exists on ESX
 ssh ${ESX_USER}@${ESX_HOST} "vim-cmd /vmsvc/getallvms" > ${TMP_DIR}/${VM_NAME}_current_vms.tmp
 HOST_CHECK=`cat ${TMP_DIR}/${VM_NAME}_current_vms.tmp | grep -v Vmid | awk ' {print $2} ' | sort | grep ${VM_NAME} | wc -l`
+DATASTORE_CHECK=`ssh ${ESX_USER}@${ESX_HOST} "if [ -d '${ESX_DATASTORE}/${VM_NAME}' ];then echo 'EXISTS';fi"`
 
 if [ ${HOST_CHECK} -gt 0 ]
 then
 	echo "Sorry. The hostname ${VM_NAME} is already in use. I quit."
 	exit
+fi
+
+if [ "${DATASTORE_CHECK}" == "EXISTS" ]
+then
+        echo "Sorry. The hostname ${VM_NAME} is already in the data store. I quit."
+        exit
 fi
 
 # Add future check here to verify OS options (RHEL, CentOS, maybe windows)
@@ -89,7 +97,7 @@ pciBridge7.virtualDev = "pcieRootPort"
 pciBridge7.functions = "8"
 vmci0.present = "TRUE"
 hpet0.present = "TRUE"
-memSize = "2G"
+memSize = "2048"
 numvcpus = "2"
 sched.cpu.units = "mhz"
 powerType.powerOff = "soft"
@@ -156,6 +164,7 @@ then
 	echo "I appear to have had an issue registering this VM host. I will now undo the creation and quit.  Here is the registration error:"
 	ssh ${ESX_USER}@${ESX_HOST} "rm -rf ${ESX_DATASTORE}/${VM_NAME}"
 	cat ${TMP_DIR}/${VM_NAME}.vmx.reg
+	exit
 else
 	echo "Host successfully registered. Now powering on VM ID ${VM_ID}."
 	ssh ${ESX_USER}@${ESX_HOST} "vim-cmd vmsvc/power.on $VM_ID" > /dev/null 2>&1
@@ -167,10 +176,14 @@ else
 
 	if [ ${IS_ON} -gt 0 ]
 	then
-		"${VM_NAME} has been successfully created and is powered on."
+		echo "${VM_NAME} has been successfully created and is powered on."
 	else
-		"${VM_NAME} could not be powered on. Investigate from vSphere client."
+		echo "${VM_NAME} could not be powered on. Investigate from vSphere client."
 	fi
+
+	# Grab the MAC address VM has provided to the host and drop it in the auto build area for future ref
+	MAC_ADD=`ssh ${ESX_USER}@${ESX_HOST} "cat ${ESX_DATASTORE}/${VM_NAME}/${VM_NAME}.vmx | grep generatedAddress | grep -v Offset" | sed 's/ethernet0.generatedAddress = "//g' | sed 's/"//g'`
+	echo "${TODAY},${VM_NAME},${MAC_ADD}" > ${AUTO_BUILD_CONFIG_DIR}/${VM_NAME}.auto.csv
 fi
 
 # Clean up logs
