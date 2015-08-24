@@ -4,7 +4,7 @@ VERSION DATE:	  24 Aug 15
 AUTHOR:	        Brian Philip
 
 README:
-This create_new_VM tool is a very simple process to automate the creation and deployment of VMware virtual Linux hosts in my current environment. Currently its targetted at basic Linux requirements.
+This create_new_VM tool is a very simple process to automate the creation and deployment of VMware virtual Linux hosts in my current environment. Its aimed at routine Linux requirements.
 
 The main create_new_VM script is executed from a management host which then uses ssh to the ESXi host to configure and spin up a new VM. The script also grabs the MAC address that VM has assigned and parks that info for later use in the automated delivery cycle.
 
