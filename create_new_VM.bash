@@ -60,7 +60,7 @@ then
 	exit
 fi
 
-# Add check here to verify OS options (RHEL, CentOS, maybe windows)
+# Add future check here to verify OS options (RHEL, CentOS, maybe windows)
 
 # Lets create the new VM
 echo "Proceeding to create basic VM host on ${ESX_HOST} called ${VM_NAME} for ${OS}."
@@ -154,6 +154,7 @@ CHECK_PATTERN='^[0-9]+$'
 if ! [[ ${VM_ID} =~ ${CHECK_PATTERN} ]]
 then
 	echo "I appear to have had an issue registering this VM host. I will now undo the creation and quit.  Here is the registration error:"
+	ssh ${ESX_USER}@${ESX_HOST} "rm -rf ${ESX_DATASTORE}/${VM_NAME}"
 	cat ${TMP_DIR}/${VM_NAME}.vmx.reg
 else
 	echo "Host successfully registered. Now powering on VM ID ${VM_ID}."
@@ -170,7 +171,7 @@ else
 	else
 		"${VM_NAME} could not be powered on. Investigate from vSphere client."
 	fi
-
 fi
 
+# Clean up logs
 rm -rf ${TMP_DIR}/${VM_NAME}*
