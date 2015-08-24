@@ -25,6 +25,7 @@ ESX_USER="root"
 ESX_DATASTORE="/vmfs/volumes/datastore1/"
 TMP_DIR="/tmp/create_vm"
 AUTO_BUILD_CONFIG_DIR="/var/www/html/pub/auto_build"
+AUTO_BUILD_CONFIG_FILE="${AUTO_BUILD_CONFIG_DIR}/vmhost_autobuild.csv"
 mkdir -p ${TMP_DIR}
 mkdir -p ${AUTO_BUILD_CONFIG_DIR}
 TODAY=`date +%x`
@@ -183,7 +184,7 @@ else
 
 	# Grab the MAC address VM has provided to the host and drop it in the auto build area for future ref
 	MAC_ADD=`ssh ${ESX_USER}@${ESX_HOST} "cat ${ESX_DATASTORE}/${VM_NAME}/${VM_NAME}.vmx | grep generatedAddress | grep -v Offset" | sed 's/ethernet0.generatedAddress = "//g' | sed 's/"//g'`
-	echo "${TODAY},${VM_NAME},${MAC_ADD}" > ${AUTO_BUILD_CONFIG_DIR}/${VM_NAME}.auto.csv
+	echo "${TODAY},${VM_NAME},${MAC_ADD}" >> ${AUTO_BUILD_CONFIG_FILE}
 fi
 
 # Clean up logs
