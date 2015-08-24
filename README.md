@@ -1,8 +1,7 @@
-#################################################################
-# TOOL:           create_new_VM  
-# VERSION:	      1.0
-# VERSION DATE:	  24 Aug 15
-# AUTHOR:	        Brian Philip
+TOOL:           create_new_VM  
+VERSION:	      1.0
+VERSION DATE:	  24 Aug 15
+AUTHOR:	        Brian Philip
 
 README:
 This create_new_VM tool is a very simple process to automate the creation and deployment of VMware virtual Linux hosts in my current environment. Currently its targetted at basic Linux requirements.
