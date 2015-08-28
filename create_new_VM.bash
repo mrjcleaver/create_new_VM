@@ -52,7 +52,7 @@ do
 	shift
 done
 
-if [ -z "${VM_NAME};
+if [ -z "${VM_NAME}" ]
 then
 	echo "Sorry. You need to specify a hostname with the -n option. I quit."
 	exit
