@@ -52,6 +52,12 @@ do
 	shift
 done
 
+if [ -z "${VM_NAME};
+then
+	echo "Sorry. You need to specify a hostname with the -n option. I quit."
+	exit
+fi
+
 # Lets start by checking if the host already exists on ESX
 ssh ${ESX_USER}@${ESX_HOST} "vim-cmd /vmsvc/getallvms" > ${TMP_DIR}/${VM_NAME}_current_vms.tmp
 HOST_CHECK=`cat ${TMP_DIR}/${VM_NAME}_current_vms.tmp | grep -v Vmid | awk ' {print $2} ' | sort | grep ${VM_NAME} | wc -l`
@@ -172,7 +178,7 @@ else
 	
 	# Lets perform a quick check to verify the host is up
 	sleep 20
-	ssh ${ESX_USER}@${ESX_HOST} "vim-cmd vmsvc/power.getstate 10 | tail -1" > ${TMP_DIR}/${VM_NAME}.power
+	ssh ${ESX_USER}@${ESX_HOST} "vim-cmd vmsvc/power.getstate ${VM_ID} | tail -1" > ${TMP_DIR}/${VM_NAME}.power
 	IS_ON=`cat ${TMP_DIR}/${VM_NAME}.power | grep "Powered on" | wc -l`
 
 	if [ ${IS_ON} -gt 0 ]
