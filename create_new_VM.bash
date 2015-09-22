@@ -1,8 +1,8 @@
 #!/bin/bash
 #################################################################
 # SCRIPT:	create_new_VM  
-# VERSION:	1.0
-# VERSION DATE:	24 Aug 15
+# VERSION:	1.1
+# VERSION DATE:	20 Sep 15
 # AUTHOR:	Brian Philip
 # DESCRIPTION:	Basic bash script to automate the creation of
 #		VM machines and then pop the VM MAC address
@@ -17,12 +17,17 @@
 #		dump the MAC address of the host for use else
 #		where in the automation cycle. 
 #################################################################
+# VERSION	DATE		AUTHOR	COMMENT
+# 1.0		24-8-15		BP	First version
+# 1.1		20-9-15		BP	Added hand over to chef	 
+#################################################################
 
 #################################################################
 # DEFINE SOME IMPORTANT VARIABLES FOR THE SCRIPT
 ESX_HOST="192.168.1.200"
 ESX_USER="root"
 ESX_DATASTORE="/vmfs/volumes/datastore1/"
+CHEF_HOST="chef"
 TMP_DIR="/tmp/create_vm"
 AUTO_BUILD_CONFIG_DIR="/var/www/html/pub/auto_build"
 AUTO_BUILD_CONFIG_FILE="${AUTO_BUILD_CONFIG_DIR}/vmhost_autobuild.csv"
@@ -188,9 +193,18 @@ else
 		echo "${VM_NAME} could not be powered on. Investigate from vSphere client."
 	fi
 
-	# Grab the MAC address VM has provided to the host and drop it in the auto build area for future ref
+	# Grab the MAC address VM has provided to the host and drop it in the auto build area for use in the post install kick start scripts
 	MAC_ADD=`ssh ${ESX_USER}@${ESX_HOST} "cat ${ESX_DATASTORE}/${VM_NAME}/${VM_NAME}.vmx | grep generatedAddress | grep -v Offset" | sed 's/ethernet0.generatedAddress = "//g' | sed 's/"//g'`
 	echo "${TODAY},${VM_NAME},${MAC_ADD}" >> ${AUTO_BUILD_CONFIG_FILE}
+
+	# Lets add the new host to the chef environment and ensure it gets the base network setup role assuming the kickstart delivers the chef client successfully
+	ssh ${CHEF_HOST} "knife node create `echo ${VM_NAME} | tr '[A-Z]' '[a-z]'` -d" > /dev/null 2>&1
+	ssh ${CHEF_HOST} "knife node run_list add `echo ${VM_NAME} | tr '[A-Z]' '[a-z]'` 'role[standard-network-services]' -d" > /dev/null 2>&1
+	# Have to perform this extra hack to get the client permissions set correctly
+	VM_LOWER=`echo ${VM_NAME} | tr '[A-Z]' '[a-z]'`
+	ssh ${CHEF_HOST} "knife download /acls/nodes" > /dev/null 2>&1
+	ssh ${CHEF_HOST} "sed -i s/bp/${VM_LOWER}/g /data/chef/chef-repo/acls/nodes/${VM_LOWER}.json" > /dev/null 2>&1
+	ssh ${CHEF_HOST} "knife upload /acls/nodes" > /dev/null 2>&1
 fi
 
 # Clean up logs
