@@ -16,5 +16,5 @@ When the VM host starts, Cobbler takes over via PXE to automatically deliver the
 The kickstart profile includes the post-ks-config.bash post script which needs to be run before the RHN registration process. This script uses the MAC address captured earlier to identify the correct host name and make sure the appropriate network config is in place to get the host fully functional and registered in RHN/SpaceWalk. The post install KS script also adds a couple of useful components for management including the chef client. 
 
 STILL TO COME: 
-Increase options for sizing VM and choosing OS/release. Add ability to delete and destroy VMs from script. Re-write in Python before bash becomes too unwieldy. Consider replacing with Ansible playbooks. 
+Increase options for sizing VM and choosing OS/release. Add ability to delete and destroy VMs from script. Re-write in Python / pysphere  before bash becomes too unwieldy. Consider replacing with Ansible playbooks. 
 
